@@ -10,24 +10,119 @@
     "/digest": { key: "digest", title: "Digest", navRoute: "/digest" },
     "/settings": { key: "settings", title: "Settings", navRoute: "/settings" },
     "/proof": { key: "proof", title: "Proof", navRoute: "/proof" },
+    "/jt/07-test": { key: "test", title: "Test Checklist", navRoute: null },
+    "/jt/08-ship": { key: "ship", title: "Ship", navRoute: null },
   };
 
   const STORAGE_KEY = "job_notification_tracker_saved";
   const PREF_KEY = "jobTrackerPreferences";
   const STATUS_KEY = "jobTrackerStatus";
   const STATUS_UPDATES_KEY = "jobTrackerStatusUpdates";
+  const TEST_KEY = "jobTrackerTestStatus";
   const JOBS = Array.isArray(window.JOB_DATA) ? window.JOB_DATA : [];
   const STATUSES = ["Not Applied", "Applied", "Rejected", "Selected"];
+  const TEST_ITEMS = [
+    {
+      id: "pref-persist",
+      label: "Preferences persist after refresh",
+      how: "Set preferences in Settings, refresh the page, confirm fields remain filled.",
+    },
+    {
+      id: "score-correct",
+      label: "Match score calculates correctly",
+      how: "Pick one job and confirm each scoring rule adds the expected points based on your preferences.",
+    },
+    {
+      id: "only-matches-toggle",
+      label: '"Show only matches" toggle works',
+      how: 'On Dashboard, enable "Show only jobs above my threshold" and confirm only jobs >= minMatchScore remain.',
+    },
+    {
+      id: "save-persist",
+      label: "Save job persists after refresh",
+      how: "Save a job on Dashboard, refresh, then confirm it remains on Saved page.",
+    },
+    {
+      id: "apply-new-tab",
+      label: "Apply opens in new tab",
+      how: 'Click "Apply" on a job and confirm it opens the apply URL in a new tab.',
+    },
+    {
+      id: "status-persist",
+      label: "Status update persists after refresh",
+      how: "Change a job status, refresh, and confirm the same status still shows on the card.",
+    },
+    {
+      id: "status-filter",
+      label: "Status filter works correctly",
+      how: "Set a few different statuses, then filter Dashboard by each status and confirm the list updates correctly.",
+    },
+    {
+      id: "digest-top-10",
+      label: "Digest generates top 10 by score",
+      how: "Generate digest and confirm jobs are ordered by match score (desc) then postedDaysAgo (asc).",
+    },
+    {
+      id: "digest-persist-day",
+      label: "Digest persists for the day",
+      how: "Generate digest, refresh, then generate again and confirm it loads the same stored digest for today.",
+    },
+    {
+      id: "no-console-errors",
+      label: "No console errors on main pages",
+      how: "Open DevTools console and visit Dashboard, Saved, Settings, Digest. Confirm no errors are logged.",
+    },
+  ];
 
   function getRouteConfig(pathname) {
     return ROUTES[pathname] || null;
+  }
+
+  function getTestStatus() {
+    try {
+      const raw = window.localStorage.getItem(TEST_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function setTestStatus(statusMap) {
+    try {
+      window.localStorage.setItem(TEST_KEY, JSON.stringify(statusMap));
+    } catch (e) {
+      // Ignore storage issues.
+    }
+  }
+
+  function getPassedCount() {
+    const status = getTestStatus();
+    return TEST_ITEMS.reduce(
+      (count, item) => count + (status[item.id] ? 1 : 0),
+      0
+    );
+  }
+
+  function areAllTestsPassed() {
+    return getPassedCount() === TEST_ITEMS.length;
+  }
+
+  function guardShipRoute(pathname) {
+    if (pathname !== "/jt/08-ship") return pathname;
+    if (areAllTestsPassed()) return pathname;
+    window.history.replaceState({}, "", "/jt/07-test");
+    showToast("Complete all tests before shipping.");
+    return "/jt/07-test";
   }
 
   function renderRoute(pathname) {
     const outlet = document.getElementById("route-outlet");
     if (!outlet) return;
 
-    const config = getRouteConfig(pathname);
+    const guardedPath = guardShipRoute(pathname);
+    const config = getRouteConfig(guardedPath);
 
     if (!config) {
       document.title = "Job Notification App – Page Not Found";
@@ -413,6 +508,71 @@
           </section>
         `;
         initDigestPage();
+        break;
+      case "test":
+        outlet.innerHTML = `
+          <section class="context-header">
+            <h1 class="context-header__title">Built-In Test Checklist</h1>
+            <p class="context-header__subtitle text-block">
+              Confirm core behaviors before shipping. Each test is stored locally and persists after refresh.
+            </p>
+          </section>
+          <section class="workspace">
+            <div class="workspace__primary">
+              <article class="card">
+                <header class="card__header">
+                  <h2 class="card__title">
+                    Tests Passed: <span id="test-passed-count">0</span> / 10
+                  </h2>
+                  <p class="card__subtitle text-block" id="test-warning"></p>
+                </header>
+                <div class="card__body">
+                  <div class="test-list" id="test-list"></div>
+                </div>
+                <footer class="card__footer">
+                  <div class="card__footer-left">
+                    <button
+                      type="button"
+                      class="button button--secondary"
+                      id="test-reset"
+                    >
+                      Reset Test Status
+                    </button>
+                  </div>
+                </footer>
+              </article>
+            </div>
+            <aside class="workspace__secondary">
+              <article class="card">
+                <header class="card__header card__header--compact">
+                  <h2 class="card__title">Notes</h2>
+                </header>
+                <div class="card__body card__body--stack">
+                  <p class="text-block">
+                    This checklist is designed to be deterministic and repeatable. Clear this state if you want a fresh pass.
+                  </p>
+                </div>
+              </article>
+            </aside>
+          </section>
+        `;
+        initTestChecklistPage();
+        break;
+      case "ship":
+        outlet.innerHTML = `
+          <section class="context-header">
+            <h1 class="context-header__title">Ship</h1>
+            <p class="context-header__subtitle text-block">
+              Complete all tests before shipping.
+            </p>
+          </section>
+          <div class="job-empty-state">
+            <h2 class="job-empty-state__title">Complete all tests before shipping.</h2>
+            <p class="job-empty-state__body text-block">
+              Visit <span class="meta-text">/jt/07-test</span> and check all 10 items to unlock shipping.
+            </p>
+          </div>
+        `;
         break;
       case "proof":
         outlet.innerHTML = `
@@ -1310,6 +1470,72 @@
     contentEl.innerHTML = renderRecentStatusUpdates();
   }
 
+  function initTestChecklistPage() {
+    const listEl = document.getElementById("test-list");
+    const passedEl = document.getElementById("test-passed-count");
+    const warningEl = document.getElementById("test-warning");
+    const resetButton = document.getElementById("test-reset");
+    if (!listEl || !passedEl || !warningEl || !resetButton) return;
+
+    function render() {
+      const status = getTestStatus();
+      const passed = TEST_ITEMS.reduce(
+        (count, item) => count + (status[item.id] ? 1 : 0),
+        0
+      );
+
+      passedEl.textContent = String(passed);
+      warningEl.textContent =
+        passed < TEST_ITEMS.length ? "Resolve all issues before shipping." : "";
+
+      listEl.innerHTML = TEST_ITEMS.map((item) => {
+        const checked = !!status[item.id];
+        return `
+          <label class="test-item">
+            <input
+              class="test-item__checkbox"
+              type="checkbox"
+              data-test-id="${escapeHtml(item.id)}"
+              ${checked ? "checked" : ""}
+            />
+            <span class="test-item__label">${escapeHtml(item.label)}</span>
+            <span
+              class="test-item__hint"
+              title="${escapeHtml(item.how)}"
+            >
+              How to test
+            </span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    listEl.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLInputElement)) return;
+      if (target.type !== "checkbox") return;
+
+      const id = target.getAttribute("data-test-id");
+      if (!id) return;
+
+      const status = getTestStatus();
+      status[id] = target.checked;
+      setTestStatus(status);
+      render();
+    });
+
+    resetButton.addEventListener("click", () => {
+      try {
+        window.localStorage.removeItem(TEST_KEY);
+      } catch (e) {
+        // Ignore failures.
+      }
+      render();
+    });
+
+    render();
+  }
+
   function initDashboardPage() {
     const listEl = document.getElementById("job-list");
     const keywordInput = document.getElementById("filter-keyword");
@@ -1677,6 +1903,14 @@
     const targetPath = href;
 
     if (currentPath === targetPath) {
+      return;
+    }
+
+    if (targetPath === "/jt/08-ship" && !areAllTestsPassed()) {
+      showToast("Complete all tests before shipping.");
+      window.history.pushState({}, "", "/jt/07-test");
+      closeMobileMenu();
+      renderRoute(window.location.pathname);
       return;
     }
 

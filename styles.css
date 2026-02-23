@@ -860,6 +860,42 @@ select.field-input {
   color: rgba(17, 17, 17, 0.7);
 }
 
+/* Test checklist */
+
+.test-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.test-item {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  border: var(--border-subtle);
+  background-color: rgba(17, 17, 17, 0.01);
+}
+
+.test-item__checkbox {
+  width: 18px;
+  height: 18px;
+}
+
+.test-item__label {
+  font-size: var(--font-size-body);
+}
+
+.test-item__hint {
+  font-size: 14px;
+  color: rgba(17, 17, 17, 0.7);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.18);
+  cursor: help;
+  padding-bottom: 1px;
+}
+
 /* Modal */
 
 #modal-root {

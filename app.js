@@ -356,10 +356,50 @@
           <section class="context-header">
             <h1 class="context-header__title">Daily Digest</h1>
             <p class="context-header__subtitle text-block">
-              A daily summary of new and important roles will appear here once the digest feature is connected.
+              A concise summary of the most relevant roles based on your preferences.
             </p>
           </section>
+          <section class="digest-shell">
+            <article class="digest-card">
+              <header class="digest-card__header">
+                <div>
+                  <h2 class="digest-card__title">
+                    Top 10 Jobs For You — 9AM Digest
+                  </h2>
+                  <p class="digest-card__subtitle" id="digest-date"></p>
+                </div>
+                <p class="digest-card__note">
+                  Demo Mode: Daily 9AM trigger simulated manually.
+                </p>
+              </header>
+              <div class="digest-card__actions">
+                <button
+                  type="button"
+                  class="button button--primary"
+                  id="digest-generate"
+                >
+                  Generate Today's 9AM Digest (Simulated)
+                </button>
+                <button
+                  type="button"
+                  class="button button--secondary"
+                  id="digest-copy"
+                >
+                  Copy Digest to Clipboard
+                </button>
+                <button
+                  type="button"
+                  class="button button--secondary"
+                  id="digest-email"
+                >
+                  Create Email Draft
+                </button>
+              </div>
+              <div id="digest-content"></div>
+            </article>
+          </section>
         `;
+        initDigestPage();
         break;
       case "proof":
         outlet.innerHTML = `
@@ -818,6 +858,263 @@
       };
 
       setPreferences(nextPreferences);
+    });
+  }
+
+  function getTodayDigestKey() {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `jobTrackerDigest_${year}-${month}-${day}`;
+  }
+
+  function getStoredDigest(key) {
+    try {
+      const raw = window.localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!Array.isArray(parsed)) return null;
+      return parsed;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function setStoredDigest(key, digestEntries) {
+    try {
+      window.localStorage.setItem(key, JSON.stringify(digestEntries));
+    } catch (e) {
+      // Ignore storage issues.
+    }
+  }
+
+  function buildDigestEntries(preferences) {
+    const scoredJobs = JOBS.map((job) => ({
+      jobId: job.id,
+      score: computeMatchScore(job, preferences),
+      postedDaysAgo: job.postedDaysAgo,
+    }));
+
+    scoredJobs.sort((a, b) => {
+      if (b.score !== a.score) {
+        return b.score - a.score;
+      }
+      return a.postedDaysAgo - b.postedDaysAgo;
+    });
+
+    const top = scoredJobs.slice(0, 10).filter((entry) => entry.score > 0);
+    return top;
+  }
+
+  function resolveDigestJobs(digestEntries, preferences) {
+    const byId = new Map(JOBS.map((job) => [job.id, job]));
+    return digestEntries
+      .map((entry) => {
+        const job = byId.get(entry.jobId);
+        if (!job) return null;
+        return {
+          job,
+          score: entry.score,
+        };
+      })
+      .filter(Boolean)
+      .map((item) => ({
+        job: item.job,
+        score: Number.isFinite(item.score)
+          ? item.score
+          : computeMatchScore(item.job, preferences),
+      }));
+  }
+
+  function formatDigestDate() {
+    const today = new Date();
+    return today.toLocaleDateString(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+  }
+
+  function buildDigestText(jobsWithScores) {
+    const lines = [];
+    lines.push("Top 10 Jobs For You — 9AM Digest");
+    lines.push(formatDigestDate());
+    lines.push("");
+
+    jobsWithScores.forEach(({ job, score }, index) => {
+      lines.push(
+        `${index + 1}. ${job.title} at ${job.company} (${job.location})`
+      );
+      lines.push(
+        `   Experience: ${job.experience} · Match Score: ${score} · Mode: ${job.mode}`
+      );
+      if (job.applyUrl) {
+        lines.push(`   Apply: ${job.applyUrl}`);
+      }
+      lines.push("");
+    });
+
+    lines.push("This digest was generated based on your preferences.");
+
+    return lines.join("\n");
+  }
+
+  function initDigestPage() {
+    const generateButton = document.getElementById("digest-generate");
+    const copyButton = document.getElementById("digest-copy");
+    const emailButton = document.getElementById("digest-email");
+    const contentEl = document.getElementById("digest-content");
+    const dateEl = document.getElementById("digest-date");
+
+    if (dateEl) {
+      dateEl.textContent = formatDigestDate();
+    }
+
+    if (!contentEl || !generateButton || !copyButton || !emailButton) {
+      return;
+    }
+
+    let currentDigestJobs = [];
+
+    function renderDigest(jobsWithScores) {
+      currentDigestJobs = jobsWithScores;
+
+      if (jobsWithScores.length === 0) {
+        contentEl.innerHTML = `
+          <div class="job-empty-state">
+            <h2 class="job-empty-state__title">No matching roles today. Check again tomorrow.</h2>
+            <p class="job-empty-state__body text-block">
+              No jobs reached a positive match score with your current preferences.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      contentEl.innerHTML = `
+        <div class="digest-job-list">
+          ${jobsWithScores
+            .map(({ job, score }) => {
+              const badgeClass = getScoreBadgeClass(score);
+              return `
+                <div class="digest-job">
+                  <div class="digest-job__main">
+                    <h3 class="digest-job__title">${escapeHtml(job.title)}</h3>
+                    <p class="digest-job__meta">
+                      ${escapeHtml(job.company)} · ${escapeHtml(
+                job.location
+              )} · Experience: ${escapeHtml(job.experience)}
+                    </p>
+                  </div>
+                  <div class="digest-job__side">
+                    <span class="badge ${badgeClass}">Match ${escapeHtml(
+                      score
+                    )}</span>
+                    <button
+                      type="button"
+                      class="button button--primary"
+                      data-digest-apply="${escapeHtml(job.id)}"
+                    >
+                      Apply
+                    </button>
+                  </div>
+                </div>
+              `;
+            })
+            .join("")}
+        </div>
+        <p class="digest-card__footer">
+          This digest was generated based on your preferences.
+        </p>
+      `;
+    }
+
+    function ensureDigestForToday() {
+      if (!hasPreferences()) {
+        contentEl.innerHTML = `
+          <div class="job-empty-state">
+            <h2 class="job-empty-state__title">Set preferences to generate a personalized digest.</h2>
+            <p class="job-empty-state__body text-block">
+              Visit the Settings page to define your preferences before generating a 9AM digest.
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      const key = getTodayDigestKey();
+      const preferences = getPreferencesOrDefault();
+      let digestEntries = getStoredDigest(key);
+
+      if (!digestEntries) {
+        digestEntries = buildDigestEntries(preferences);
+        setStoredDigest(key, digestEntries);
+      }
+
+      const jobsWithScores = resolveDigestJobs(digestEntries, preferences);
+      renderDigest(jobsWithScores);
+    }
+
+    generateButton.addEventListener("click", () => {
+      ensureDigestForToday();
+    });
+
+    contentEl.addEventListener("click", (event) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+
+      const applyAttr = target.getAttribute("data-digest-apply");
+      if (!applyAttr) return;
+
+      const job = JOBS.find((j) => j.id === applyAttr);
+      if (job && job.applyUrl) {
+        window.open(job.applyUrl, "_blank", "noreferrer");
+      }
+    });
+
+    copyButton.addEventListener("click", () => {
+      if (!currentDigestJobs.length) {
+        ensureDigestForToday();
+      }
+
+      if (!currentDigestJobs.length) {
+        return;
+      }
+
+      const text = buildDigestText(currentDigestJobs);
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(() => {});
+      } else {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+          document.execCommand("copy");
+        } catch (e) {
+          // Ignore failures.
+        }
+        document.body.removeChild(textarea);
+      }
+    });
+
+    emailButton.addEventListener("click", () => {
+      if (!currentDigestJobs.length) {
+        ensureDigestForToday();
+      }
+
+      if (!currentDigestJobs.length) {
+        return;
+      }
+
+      const text = buildDigestText(currentDigestJobs);
+      const subject = "My 9AM Job Digest";
+      const mailto = `mailto:?subject=${encodeURIComponent(
+        subject
+      )}&body=${encodeURIComponent(text)}`;
+      window.location.href = mailto;
     });
   }
 

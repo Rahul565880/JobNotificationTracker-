@@ -657,6 +657,101 @@ select.field-input {
   background-color: rgba(17, 17, 17, 0.02);
 }
 
+/* Job status */
+
+.badge--status {
+  background-color: rgba(17, 17, 17, 0.02);
+}
+
+.badge--status-not-applied {
+  border-color: rgba(17, 17, 17, 0.16);
+  color: rgba(17, 17, 17, 0.7);
+  background-color: rgba(17, 17, 17, 0.02);
+}
+
+.badge--status-applied {
+  border-color: rgba(31, 78, 121, 0.6);
+  color: rgba(31, 78, 121, 1);
+  background-color: rgba(31, 78, 121, 0.08);
+}
+
+.badge--status-rejected {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background-color: rgba(139, 0, 0, 0.06);
+}
+
+.badge--status-selected {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background-color: rgba(47, 106, 79, 0.08);
+}
+
+.status-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.status-group__button {
+  min-height: 32px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-md);
+  border: var(--border-subtle);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color var(--transition-standard),
+    border-color var(--transition-standard), color var(--transition-standard);
+}
+
+.status-group__button:hover {
+  background-color: rgba(17, 17, 17, 0.03);
+}
+
+.status-group__button--active {
+  border-color: rgba(17, 17, 17, 0.24);
+  background-color: rgba(17, 17, 17, 0.04);
+  font-weight: 600;
+}
+
+/* Toasts */
+
+#toast-root {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+}
+
+.toast-stack {
+  position: fixed;
+  right: var(--space-3);
+  bottom: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.toast {
+  pointer-events: auto;
+  max-width: 420px;
+  border-radius: var(--radius-md);
+  border: var(--border-subtle);
+  background-color: #ffffff;
+  padding: var(--space-2);
+  color: var(--color-text);
+  transition: opacity var(--transition-standard),
+    transform var(--transition-standard);
+  opacity: 1;
+}
+
+.toast--leaving {
+  opacity: 0;
+  transform: translateY(4px);
+}
+
 .job-empty-state {
   padding: var(--space-4);
   border-radius: var(--radius-md);

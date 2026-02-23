@@ -73,11 +73,17 @@ body {
 
 .top-bar {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: var(--space-1);
   padding: var(--space-2) var(--space-4);
   border-bottom: var(--border-subtle);
   background-color: var(--color-bg);
+}
+
+.top-bar__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .top-bar__left,
@@ -99,6 +105,75 @@ body {
 
 .progress-indicator {
   font-size: var(--font-size-body);
+}
+
+/* Top navigation */
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: var(--border-subtle);
+  padding-top: var(--space-1);
+}
+
+.top-nav__menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.top-nav__link {
+  text-decoration: none;
+  color: var(--color-text);
+  padding-bottom: var(--space-1);
+  font-size: 14px;
+}
+
+.top-nav__link:hover {
+  text-decoration: none;
+}
+
+.top-nav__link--active {
+  border-bottom: 2px solid var(--color-accent);
+}
+
+.top-nav__toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 var(--space-1);
+  min-height: 32px;
+  border-radius: var(--radius-md);
+  border: var(--border-subtle);
+  background: transparent;
+  cursor: pointer;
+}
+
+.top-nav__icon,
+.top-nav__icon::before,
+.top-nav__icon::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background-color: var(--color-text);
+  border-radius: 1px;
+  position: relative;
+  content: "";
+}
+
+.top-nav__icon::before,
+.top-nav__icon::after {
+  position: absolute;
+  left: 0;
+}
+
+.top-nav__icon::before {
+  top: -6px;
+}
+
+.top-nav__icon::after {
+  top: 6px;
 }
 
 /* Status badge */
@@ -491,6 +566,21 @@ select.field-input {
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-2);
+  }
+
+  .top-nav__toggle {
+    display: inline-flex;
+  }
+
+  .top-nav__menu {
+    display: none;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-left: var(--space-3);
+  }
+
+  .top-nav.top-nav--open .top-nav__menu {
+    display: flex;
   }
 }
 

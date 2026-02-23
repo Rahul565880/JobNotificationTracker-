@@ -10,227 +10,55 @@
     <div class="app-shell">
       <!-- Top Bar -->
       <header class="top-bar">
-        <div class="top-bar__left">
-          <span class="app-name">Job Notification App</span>
+        <div class="top-bar__row">
+          <div class="top-bar__left">
+            <span class="app-name">Job Notification App</span>
+          </div>
+          <div class="top-bar__center">
+            <span class="progress-indicator">Step 1 / 4</span>
+          </div>
+          <div class="top-bar__right">
+            <span class="status-badge status-badge--idle">Not Started</span>
+          </div>
         </div>
-        <div class="top-bar__center">
-          <span class="progress-indicator">Step 1 / 4</span>
-        </div>
-        <div class="top-bar__right">
-          <span class="status-badge status-badge--idle">Not Started</span>
-        </div>
+
+        <nav class="top-nav" aria-label="Primary navigation">
+          <button
+            class="top-nav__toggle"
+            type="button"
+            aria-label="Toggle navigation"
+            aria-expanded="false"
+            aria-controls="top-nav-menu"
+          >
+            <span class="top-nav__icon" aria-hidden="true"></span>
+          </button>
+          <div class="top-nav__menu" id="top-nav-menu">
+            <a
+              href="/dashboard"
+              class="top-nav__link"
+              data-route="/dashboard"
+            >
+              Dashboard
+            </a>
+            <a href="/saved" class="top-nav__link" data-route="/saved">
+              Saved
+            </a>
+            <a href="/digest" class="top-nav__link" data-route="/digest">
+              Digest
+            </a>
+            <a href="/settings" class="top-nav__link" data-route="/settings">
+              Settings
+            </a>
+            <a href="/proof" class="top-nav__link" data-route="/proof">
+              Proof
+            </a>
+          </div>
+        </nav>
       </header>
 
       <!-- Main Content -->
       <main class="app-main">
-        <!-- Context Header -->
-        <section class="context-header">
-          <h1 class="context-header__title">
-            Configure your job notification workspace
-          </h1>
-          <p class="context-header__subtitle text-block">
-            Define how this workspace should behave before adding any specific
-            notification rules or integrations.
-          </p>
-        </section>
-
-        <!-- Workspace: Primary (70%) + Secondary (30%) -->
-        <section class="workspace">
-          <!-- Primary Workspace -->
-          <div class="workspace__primary">
-            <article class="card">
-              <header class="card__header">
-                <h2 class="card__title">Workspace basics</h2>
-                <p class="card__subtitle text-block">
-                  These settings describe the workspace in neutral, durable
-                  language. They do not create any real notifications yet.
-                </p>
-              </header>
-              <div class="card__body">
-                <div class="field-group">
-                  <div class="field">
-                    <label class="field-label" for="workspace-name">
-                      Workspace name
-                    </label>
-                    <input
-                      id="workspace-name"
-                      class="field-input"
-                      type="text"
-                      placeholder="e.g. Product Management Roles"
-                    />
-                    <p class="field-hint">
-                      Use a clear, specific name so you can recognize this
-                      workspace later.
-                    </p>
-                  </div>
-
-                  <div class="field">
-                    <label class="field-label" for="workspace-scope">
-                      Scope description
-                    </label>
-                    <textarea
-                      id="workspace-scope"
-                      class="field-input field-input--multiline"
-                      rows="4"
-                      placeholder="Describe which types of roles, locations, and seniority levels belong here."
-                    ></textarea>
-                    <p class="field-hint">
-                      This description is used only for context. It does not
-                      connect to any external systems yet.
-                    </p>
-                  </div>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="field-group field-group--split">
-                  <div class="field">
-                    <label class="field-label" for="default-language">
-                      Default language
-                    </label>
-                    <select id="default-language" class="field-input">
-                      <option>English</option>
-                      <option>French</option>
-                      <option>German</option>
-                    </select>
-                    <p class="field-hint">
-                      This sets the default language for future content in this
-                      workspace.
-                    </p>
-                  </div>
-
-                  <div class="field">
-                    <label class="field-label" for="time-zone">
-                      Reference time zone
-                    </label>
-                    <select id="time-zone" class="field-input">
-                      <option>(UTC) Coordinated Universal Time</option>
-                      <option>(UTC+01:00) Berlin</option>
-                      <option>(UTC-05:00) New York</option>
-                    </select>
-                    <p class="field-hint">
-                      Used as a reference. No notifications are scheduled yet.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <footer class="card__footer">
-                <div class="card__footer-left">
-                  <button class="button button--primary" type="button">
-                    Save workspace foundation
-                  </button>
-                  <button class="button button--secondary" type="button">
-                    Cancel
-                  </button>
-                </div>
-                <div class="card__footer-right">
-                  <span class="meta-text">Changes are local to this page.</span>
-                </div>
-              </footer>
-            </article>
-
-            <!-- Example States -->
-            <article class="card">
-              <header class="card__header card__header--compact">
-                <h2 class="card__title">States and feedback</h2>
-              </header>
-              <div class="card__body card__body--stack">
-                <div class="alert alert--empty">
-                  <h3 class="alert__title">No notification rules yet</h3>
-                  <p class="alert__body">
-                    You have not defined any notification rules in this
-                    workspace. Once the foundation is saved, use the primary
-                    action on the next step to add your first rule.
-                  </p>
-                </div>
-
-                <div class="alert alert--error">
-                  <h3 class="alert__title">We could not save this workspace</h3>
-                  <p class="alert__body">
-                    Something interrupted the save process. Check your network
-                    connection and try again. Your current inputs remain on this
-                    page until you leave.
-                  </p>
-                </div>
-
-                <div class="alert alert--success">
-                  <h3 class="alert__title">Workspace foundation updated</h3>
-                  <p class="alert__body">
-                    The workspace details were saved successfully. You can
-                    continue to the next step at any time.
-                  </p>
-                </div>
-              </div>
-            </article>
-          </div>
-
-          <!-- Secondary Panel -->
-          <aside class="workspace__secondary">
-            <article class="card">
-              <header class="card__header">
-                <h2 class="card__title">Step overview</h2>
-                <p class="card__subtitle text-block">
-                  This step defines the context for your job notification
-                  workspace. It does not send or receive any data.
-                </p>
-              </header>
-              <div class="card__body card__body--stack">
-                <ol class="step-list">
-                  <li class="step-list__item step-list__item--current">
-                    Foundation and naming
-                  </li>
-                  <li class="step-list__item">Sources and inputs</li>
-                  <li class="step-list__item">Notification rules</li>
-                  <li class="step-list__item">Review and confirm</li>
-                </ol>
-              </div>
-            </article>
-
-            <article class="card">
-              <header class="card__header card__header--compact">
-                <h2 class="card__title">Copyable prompt</h2>
-              </header>
-              <div class="card__body card__body--stack">
-                <div class="prompt-box">
-                  <p class="prompt-box__label">Prompt</p>
-                  <div class="prompt-box__content">
-                    <p>
-                      You are setting up a job notification workspace. The goal
-                      is to keep the language neutral and durable while staying
-                      specific about scope and intent. Suggest a clear name and
-                      a two-sentence scope description based on the user’s
-                      inputs.
-                    </p>
-                  </div>
-                  <div class="prompt-box__actions">
-                    <button class="button button--secondary" type="button">
-                      Copy prompt
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article class="card">
-              <header class="card__header card__header--compact">
-                <h2 class="card__title">Status</h2>
-              </header>
-              <div class="card__body card__body--stack">
-                <div class="status-row">
-                  <span class="status-label">Current step</span>
-                  <span class="status-value">Step 1 · Foundation</span>
-                </div>
-                <div class="status-row">
-                  <span class="status-label">Overall status</span>
-                  <span class="status-badge status-badge--active">
-                    In Progress
-                  </span>
-                </div>
-              </div>
-            </article>
-          </aside>
-        </section>
+        <section id="route-outlet" class="context-header"></section>
       </main>
 
       <!-- Proof Footer -->
@@ -246,6 +74,6 @@
         </div>
       </footer>
     </div>
+    <script src="./app.js" defer></script>
   </body>
 </html>
-

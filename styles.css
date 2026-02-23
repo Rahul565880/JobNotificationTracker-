@@ -633,6 +633,30 @@ select.field-input {
   background-color: rgba(17, 17, 17, 0.02);
 }
 
+.badge--score-high {
+  border-color: var(--color-success);
+  color: var(--color-success);
+  background-color: rgba(47, 106, 79, 0.08);
+}
+
+.badge--score-medium {
+  border-color: var(--color-warning);
+  color: var(--color-warning);
+  background-color: rgba(162, 107, 31, 0.08);
+}
+
+.badge--score-low {
+  border-color: rgba(17, 17, 17, 0.24);
+  color: rgba(17, 17, 17, 0.9);
+  background-color: rgba(17, 17, 17, 0.04);
+}
+
+.badge--score-minimal {
+  border-color: rgba(17, 17, 17, 0.16);
+  color: rgba(17, 17, 17, 0.6);
+  background-color: rgba(17, 17, 17, 0.02);
+}
+
 .job-empty-state {
   padding: var(--space-4);
   border-radius: var(--radius-md);
